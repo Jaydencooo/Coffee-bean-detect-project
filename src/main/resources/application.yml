@@ -32,7 +32,7 @@ coze:
   pat: pat_Jvk4LOewOuIhUtm2V7qSxXp3uS8VzH48UPcQbgZt0ZC6fVdzu4xM3u0QLGsQsvB7
 
 detection:
-  python-exe: venv/bin/python3             # Python 解释器路径，可写系统 Python 或虚拟环境 Python
+  python-exe: venv/bin/python3    # Python 解释器路径，可写系统 Python 或虚拟环境 Python
                                   # Windows 上可能是 python 或虚拟环境路径 venv\Scripts\python.exe
                                   # Mac 上可以是系统 Python 或虚拟环境路径 /path/to/venv/bin/python3
 

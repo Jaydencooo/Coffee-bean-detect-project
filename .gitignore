@@ -1,0 +1,29 @@
+# Java / Spring Boot
+/target/
+*.class
+*.jar
+*.war
+
+# IDE
+/.idea/
+*.iml
+
+# Python
+/venv/
+__pycache__/
+*.pyc
+
+# YOLOv5 模型和运行文件
+*.pt
+/yolov5/runs/
+
+# 日志
+*.log
+
+# 上传文件目录
+/uploads/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
