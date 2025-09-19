@@ -5,34 +5,43 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * 文件上传工具类
+ * 可从 application.yml 的 file.upload-dir 配置上传目录
+ */
 public class FileUploadUtils {
 
-    // 静态变量，启动时读取系统属性或默认路径
-    private static final String UPLOAD_DIR;
-
-    static {
-        // 尝试从系统属性读取，如果没有则用默认 uploads
-        UPLOAD_DIR = System.getProperty("file.upload-dir", "uploads");
-    }
+    // 默认上传目录，如果 yml 没配置则使用 uploads
+    private static final String UPLOAD_DIR = System.getProperty("file.upload-dir", "uploads");
 
     /**
      * 上传文件
-     * @param file MultipartFile
-     * @return 可访问 URL，例如 /uploads/xxx.jpg
+     * @param file 前端传来的 MultipartFile
+     * @return 返回可访问 URL，比如 /uploads/xxxx.jpg
      */
     public static String upload(MultipartFile file) throws IOException {
-        // 创建目录
-        File dir = new File(UPLOAD_DIR);
-        if (!dir.exists()) dir.mkdirs();
+        if (file == null || file.isEmpty()) {
+            throw new IOException("上传文件为空");
+        }
 
-        // 生成新文件名
-        String newFileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        // 获取项目根目录
+        File projectDir = new File(System.getProperty("user.dir"));
+
+        // 构建上传目录
+        File uploadDir = new File(projectDir, UPLOAD_DIR);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs(); // 自动创建目录
+        }
+
+        // 构建新文件名
+        String originalFilename = file.getOriginalFilename();
+        String newFileName = System.currentTimeMillis() + "_" + originalFilename;
 
         // 保存文件
-        File dest = new File(dir, newFileName);
+        File dest = new File(uploadDir, newFileName);
         file.transferTo(dest);
 
-        // 返回 URL（相对于服务器根路径）
+        // 返回前端可访问 URL
         return "/" + UPLOAD_DIR + "/" + newFileName;
     }
 }

@@ -32,63 +32,6 @@ public class CoffeeDefectController {
     @Autowired
     private DetectionRecordService detectionRecordService;
 
-    /**
-     * 文件上传接口
-     *
-     * 1. 接收前端上传的 MultipartFile 文件
-     * 2. 判断文件是否为空
-     * 3. 生成唯一文件名，避免覆盖
-     * 4. 保存文件到服务器 /uploads/ 目录
-     * 5. 返回文件路径给前端
-     *
-     * @param file 前端上传的文件
-     * @return Result<String> 返回上传文件路径或错误信息
-     */
-
-    @Value("${file.upload-dir}")
-    private String uploadDir; // 从 application.yml 注入
-
-    @PostMapping("/upload")
-    public Result<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return Result.error("上传文件为空");
-        }
-
-        try {
-            // 生成唯一文件名
-            String original = file.getOriginalFilename();
-            String ext = "";
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf("."));
-            }
-            String fileName = UUID.randomUUID().toString() + ext;
-
-            // 计算保存目录：若 uploadDir 是相对路径，则相对于运行目录(System.getProperty("user.dir"))
-            Path base = Paths.get(System.getProperty("user.dir"));
-            Path targetDir = Paths.get(uploadDir);
-            if (!targetDir.isAbsolute()) {
-                targetDir = base.resolve(targetDir);
-            }
-
-            // 创建目录（若不存在）
-            Files.createDirectories(targetDir);
-
-            // 保存文件
-            Path targetFile = targetDir.resolve(fileName);
-            file.transferTo(targetFile.toFile());
-
-            // 构建前端可访问的 URL （自动包含 context-path）
-            String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .path("/uploads/")
-                    .path(fileName)
-                    .toUriString();
-
-            return Result.success(fileUrl);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Result.error("上传失败：" + e.getMessage());
-        }
-    }
 
     /**
      * 缺陷检测接口

@@ -22,27 +22,59 @@ import java.util.List;
 
 /**
  * DetectionRecordServiceImpl
- * 调用检测服务（DetectionServiceImpl） + 保存记录 + 返回前端
- * -
- * 功能：
- * 1. 调用 Python 脚本 infer.py 进行咖啡豆缺陷检测
- * 2. 解析检测结果 JSON
- * -
- * 3. 保存检测记录到数据库
- * 4. 将检测结果封装为 DTO 返回给前端
+ *
+ * <p>功能：
+ * <ul>
+ *     <li>调用 Python 脚本进行咖啡豆缺陷检测</li>
+ *     <li>解析 Python 脚本输出的 JSON 结果</li>
+ *     <li>保存检测记录到数据库</li>
+ *     <li>将检测结果封装为 DTO 返回给前端</li>
+ * </ul>
+ *
+ * <p>执行流程：
+ * <ol>
+ *     <li>初始化加载缺陷标签文件（labels.txt），在 Spring 容器初始化完成后执行 {@link #init()}</li>
+ *     <li>调用 Python 推理脚本（Yolo 模型）执行缺陷检测，获取原始 JSON 输出</li>
+ *     <li>将检测结果保存为 {@link DetectionRecord} 并插入数据库</li>
+ *     <li>将缺陷 JSON 解析为 {@link DetectionResultDTO} 并返回前端</li>
+ * </ol>
+ *
+ * <p>异常处理：
+ * <ul>
+ *     <li>Python 脚本执行失败或退出码非 0 抛出 RuntimeException</li>
+ *     <li>JSON 解析异常抛出 IOException</li>
+ *     <li>进程执行中断抛出 InterruptedException</li>
+ * </ul>
+ *
+ * <p>注意事项：
+ * <ul>
+ *     <li>确保 Python 环境和依赖库已正确安装</li>
+ *     <li>labels 文件路径和脚本路径需根据部署环境配置</li>
+ *     <li>缺陷阈值可根据需求调整（当前为 confidence > 0.5）</li>
+ * </ul>
+ *
+ * @author
+ * @version 1.0
+ * @since 2025-09-18
  */
 @Service
 public class DetectionRecordServiceImpl implements DetectionRecordService {
 
     @Autowired
-    private DetectionRecordMapper detectionRecordMapper; // 数据库操作 Mapper
+    private DetectionRecordMapper detectionRecordMapper;
 
-    private List<String> labels; // 标签列表，用于解析 output 数组
+    /** 标签列表，用于解析 output 数组 */
+    private List<String> labels;
+
+    /** 标签文件路径，从配置文件读取 */
     @Value("${detection.labels-file}")
     private String labelsPath;
+
     /**
      * 初始化方法，加载标签文件
-     * @PostConstruct 表示 Spring 容器初始化完毕后执行该方法
+     *
+     * <p>在 Spring 容器初始化完成后执行，读取 labels 文件到 {@link #labels} 列表。
+     * 如果读取失败，使用空列表以避免空指针异常。
      */
     @PostConstruct
     public void init() {
@@ -50,10 +82,10 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
         String fullLabelsPath = Paths.get(projectDir, labelsPath).toString();
 
         try {
-            labels = Files.readAllLines(Paths.get(labelsPath)); // 读取所有标签到 List
+            labels = Files.readAllLines(Paths.get(labelsPath));
         } catch (IOException e) {
             e.printStackTrace();
-            labels = new ArrayList<>(); // 读取失败时使用空列表
+            labels = new ArrayList<>();
         }
     }
 
@@ -66,18 +98,14 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
      * @throws InterruptedException 脚本执行中断异常
      */
     private String runYoloDetection(String imagePath) throws IOException, InterruptedException {
-        // Python 解释器路径（虚拟环境路径）
         String pythonInterpreterPath = "/Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/venv/bin/python3";
-        // Python 推理脚本路径
         String inferScriptPath = "/Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/scripts/infer.py";
 
-        // 构建命令：python3 infer.py imagePath
         ProcessBuilder pb = new ProcessBuilder(pythonInterpreterPath, inferScriptPath, imagePath);
-        pb.redirectErrorStream(true); // 将标准错误流合并到标准输出流
+        pb.redirectErrorStream(true);
 
-        Process process = pb.start(); // 启动进程执行脚本
+        Process process = pb.start();
 
-        // 读取 Python 脚本输出
         StringBuilder output = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
@@ -86,7 +114,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
             }
         }
 
-        int exitCode = process.waitFor(); // 等待脚本执行完成
+        int exitCode = process.waitFor();
         if (exitCode != 0) {
             throw new RuntimeException("推理脚本执行失败，退出码：" + exitCode + "\n输出：" + output);
         }
@@ -94,15 +122,12 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
         String rawOutput = output.toString();
         System.out.println("Python原始输出: " + rawOutput);
 
-        // 提取 JSON 字符串
         int jsonIndex = rawOutput.indexOf("{");
         if (jsonIndex == -1) {
             throw new RuntimeException("咖啡豆缺陷检测失败: 未找到 JSON 内容\n原始输出: " + rawOutput);
         }
 
-        String jsonStr = rawOutput.substring(jsonIndex);
-        System.out.println("提取JSON: " + jsonStr);
-        return jsonStr;
+        return rawOutput.substring(jsonIndex);
     }
 
     /**
@@ -110,23 +135,20 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
      *
      * @param imagePath 待检测图片路径
      * @param userId 用户 ID
-     * @return 保存的 DetectionRecord 对象
+     * @return {@link DetectionRecord} 保存的检测记录对象
      * @throws IOException 脚本输出读取异常
      * @throws InterruptedException 脚本执行中断异常
      */
     @Override
     public DetectionRecord detectAndSave(String imagePath, Long userId) throws IOException, InterruptedException {
-        // 调用 Python 检测，获取 defectsJson
         String defectsJson = runYoloDetection(imagePath);
 
-        // 构建检测记录对象
         DetectionRecord record = new DetectionRecord();
         record.setUserId(userId);
         record.setImagePath(imagePath);
         record.setDefectsJson(defectsJson);
         record.setCreatedAt(LocalDateTime.now());
 
-        // 插入数据库
         detectionRecordMapper.insert(record);
 
         return record;
@@ -137,7 +159,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
      *
      * @param imagePath 待检测图片路径
      * @param userId 用户 ID
-     * @return DetectionResultDTO，封装前端需要的数据
+     * @return {@link DetectionResultDTO} 封装前端需要的缺陷检测结果
      * @throws IOException 脚本输出解析异常
      * @throws InterruptedException 脚本执行中断异常
      */
@@ -147,22 +169,20 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
     }
 
     /**
-     * 将 defectsJson 解析为 DetectionResultDTO
+     * 将 defectsJson 解析为 {@link DetectionResultDTO}
      *
      * @param defectsJson Python 脚本输出的 JSON 字符串
-     * @return DetectionResultDTO 封装缺陷检测结果
+     * @return {@link DetectionResultDTO} 封装缺陷检测结果
      * @throws IOException JSON 解析异常
      */
     private DetectionResultDTO parseOutputToDTO(String defectsJson) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(defectsJson); // 解析 JSON
+        JsonNode root = mapper.readTree(defectsJson);
 
         DetectionResultDTO dto = new DetectionResultDTO();
-        dto.setStatus("success"); // 状态固定为 success
+        dto.setStatus("success");
 
         List<DetectionResultDTO.Defect> defectList = new ArrayList<>();
-
-        // 尝试获取 "defects" 数组
         JsonNode defectsArray = root.get("defects");
 
         if (defectsArray != null && defectsArray.isArray() && defectsArray.size() > 0) {
@@ -170,16 +190,13 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
                 DetectionResultDTO.Defect defect = new DetectionResultDTO.Defect();
                 defect.setType(defectNode.get("type").asText());
                 defect.setConfidence(defectNode.get("confidence").asDouble());
-
                 defectList.add(defect);
             }
         } else {
-            // 如果 "defects" 不存在，尝试解析 "output" 数组
             JsonNode outputArray = root.get("output");
             if (outputArray != null && outputArray.isArray()) {
                 for (int i = 0; i < outputArray.size(); i++) {
                     double confidence = outputArray.get(i).asDouble();
-                    // 根据阈值过滤缺陷
                     if (confidence > 0.5) {
                         DetectionResultDTO.Defect defect = new DetectionResultDTO.Defect();
                         defect.setType(labels != null && labels.size() > i ? labels.get(i) : "unknown");

@@ -46,4 +46,9 @@ public class User {
      * 该字段通常在用户注册时自动生成。
      */
     private Date createTime;
+
+    private String avatarUrl;
+
+    private String name;
+
 }

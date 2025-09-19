@@ -20,7 +20,7 @@ public class DetectionRecord {
      * 主键 ID，数据库自动生成（自增）
      * 该字段是每条记录的唯一标识
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**

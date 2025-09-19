@@ -5,6 +5,9 @@ import com.coffee.project.domain.User;
 import com.coffee.project.dto.LoginDTO;
 import com.coffee.project.dto.PasswordResetDTO;
 import com.coffee.project.dto.RegisterDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
  * 用户服务接口，定义了用户相关的核心业务操作。
@@ -43,4 +46,8 @@ public interface UserService {
      *         - false: 重置失败（如验证失败、用户不存在等）
      */
     Result<Object> passwordReset(PasswordResetDTO request);
+
+    Result<Object> updateName(Long id,String name);
+
+    Result<Object> updateAvatar(Long id,MultipartFile file) throws IOException;
 }

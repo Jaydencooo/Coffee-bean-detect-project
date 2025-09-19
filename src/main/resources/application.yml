@@ -11,7 +11,7 @@ file:
 
 mybatis-plus:
   configuration:
-    map-underscore-to-camel-case: false
+    map-underscore-to-camel-case: true
     # 是否开启数据库字段下划线到实体属性驼峰命名的自动映射，false表示不开启（字段名与属性名必须一致）
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # MyBatis 日志实现类，输出 SQL 到控制台，方便调试
