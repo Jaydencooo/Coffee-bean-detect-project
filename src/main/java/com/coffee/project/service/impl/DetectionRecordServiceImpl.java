@@ -3,9 +3,11 @@ package com.coffee.project.service.impl;
 import com.coffee.project.domain.DetectionRecord;
 import com.coffee.project.dto.DetectionResultDTO;
 import com.coffee.project.mapper.DetectionRecordMapper;
+import com.coffee.project.service.DetectionHistoryService;
 import com.coffee.project.service.DetectionRecordService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -59,10 +61,14 @@ import java.util.stream.Collectors;
  * @since 2025-09-18
  */
 @Service
+@Slf4j
 public class DetectionRecordServiceImpl implements DetectionRecordService {
 
     @Autowired
     private DetectionRecordMapper detectionRecordMapper;
+
+    @Autowired
+    private DetectionHistoryService detectionHistoryService;
 
     /** 标签列表，用于解析 output 数组 */
     private List<String> labels;
@@ -71,6 +77,11 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
     @Value("${detection.labels-file}")
     private String labelsPath;
 
+    @Value("${detection.pythonInterpreterPath}")
+    private String pythonInterpreterPath;
+
+    @Value("${detection.inferScriptPath}")
+    private String inferScriptPath;
     /**
      * 初始化方法，加载标签文件
      *
@@ -99,8 +110,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
      * @throws InterruptedException 脚本执行中断异常
      */
     private String runYoloDetection(String imagePath) throws IOException, InterruptedException {
-        String pythonInterpreterPath = "/Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/venv/bin/python3";
-        String inferScriptPath = "/Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/scripts/infer.py";
+
 
         ProcessBuilder pb = new ProcessBuilder(pythonInterpreterPath, inferScriptPath, imagePath);
         pb.redirectErrorStream(true);
@@ -161,7 +171,11 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 
         // 保存到数据库
         detectionRecordMapper.insert(record);
-
+        try {
+            detectionHistoryService.addHistory(record.getUserId(), record.getDefectsName(), record.getImagePath());
+        } catch (Exception e) {
+            log.error("保存检测历史失败", e);
+        }
         return record;
     }
 
