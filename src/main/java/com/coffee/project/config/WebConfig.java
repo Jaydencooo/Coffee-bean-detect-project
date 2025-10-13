@@ -34,7 +34,12 @@ public class WebConfig implements WebMvcConfigurer {
                         "/user/login",
                         "/user/register",
                         "/user/reset-password",
-                        "/error"
+                        "/error",
+                        "/**/*.png",
+                        "/**/*.jpg",
+                        "/**/*.jpeg",
+                        "/**/*.gif",
+                        "/uploads/**"
                 );
     }
 
