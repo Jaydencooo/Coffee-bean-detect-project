@@ -9,20 +9,44 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * 检测历史记录实体类
+ * 用于存储用户每次检测咖啡豆缺陷的记录
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("detection_history")
 public class DetectionHistory {
 
+    /**
+     * 自增主键
+     * 数据库中唯一标识每条检测记录的ID
+     */
     @TableId(type = IdType.AUTO)
-    private Long id;                // 自增主键
+    private Long id;
 
-    private Long userId;            // 用户ID
+    /**
+     * 用户ID
+     * 关联用户表的ID，表示是哪个用户进行的检测
+     */
+    private Long userId;
 
-    private String defectsName;     // 缺陷豆名字
+    /**
+     * 缺陷豆名字
+     * 检测到的咖啡豆缺陷的名称，例如“黑豆”、“霉变豆”等
+     */
+    private String defectsName;
 
-    private String imagePath;       // 图片路径
+    /**
+     * 图片路径
+     * 检测时上传的咖啡豆图片的存储路径
+     */
+    private String imagePath;
 
-    private LocalDateTime createdAt; // 识别时间
+    /**
+     * 识别时间
+     * 记录检测操作发生的时间，精确到秒
+     */
+    private LocalDateTime createdAt;
 }

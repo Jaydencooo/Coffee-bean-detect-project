@@ -1,47 +1,57 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver   # MySQL JDBC 驱动类名
-    url: jdbc:mysql://localhost:3306/coffeebean_detect  # 数据库连接URL，指定了数据库名coffeebean_detect
+    url: jdbc:mysql://localhost:3306/coffeebean_detect  # 数据库连接URL，指定数据库名 coffeebean_detect
     username: root    # 数据库用户名
     password: bape050622  # 数据库密码
 
   redis:
-    host: localhost
-    port: 6379
-    password: bape050622
+    host: localhost     # Redis 主机地址
+    port: 6379          # Redis 端口
+    password: bape050622  # Redis 密码，如果无密码可省略
 
 file:
-  # 默认：相对路径 uploads（随 JAR 运行目录），可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
+  # 文件上传配置
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
+  # 默认上传目录为相对路径 "uploads"，可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-    # 是否开启数据库字段下划线到实体属性驼峰命名的自动映射，false表示不开启（字段名与属性名必须一致）
+    # 是否开启数据库字段下划线到实体属性驼峰命名的自动映射，true表示开启
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # MyBatis 日志实现类，输出 SQL 到控制台，方便调试
+    # MyBatis 日志实现类，将 SQL 输出到控制台，方便调试
 
   global-config:
     db-config:
-      logic-delete-field: isDelete   # 逻辑删除字段名，数据库中标识删除状态的字段
+      logic-delete-field: isDelete   # 逻辑删除字段名，对应数据库中标识删除状态的字段
       logic-delete-value: 1           # 逻辑删除时字段值，1表示已删除
       logic-not-delete-value: 0       # 未删除的字段值，0表示未删除
 
 server:
   port: 8080            # 应用运行端口号
   servlet:
-    context-path: /api  # 应用的上下文路径，所有请求都会以/api开头
+    context-path: /api  # 应用上下文路径，所有请求都会以 /api 开头
 
 coze:
-  bot-id: 7547989723290026030   # 替换为你的 Bot ID
+  bot-id: 7547989723290026030   # Bot ID，替换为你的 Bot ID
   pat: pat_Jvk4LOewOuIhUtm2V7qSxXp3uS8VzH48UPcQbgZt0ZC6fVdzu4xM3u0QLGsQsvB7
+  # Bot PAT（访问令牌），用于身份验证和调用接口
 
 detection:
-  python-exe: venv/bin/python3    # Python 解释器路径，可写系统 Python 或虚拟环境 Python
-                                  # Windows 上可能是 python 或虚拟环境路径 venv\Scripts\python.exe
-                                  # Mac 上可以是系统 Python 或虚拟环境路径 /path/to/venv/bin/python3
+  python-exe: venv/bin/python3
+  # Python 解释器路径，可写系统 Python 或虚拟环境 Python
+  # Windows 上可能是 python 或虚拟环境路径 venv\Scripts\python.exe
+  # Mac 上可以是系统 Python 或虚拟环境路径 /path/to/venv/bin/python3
 
   pythonInterpreterPath: /Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/venv/bin/python3
+  # Python 解释器绝对路径，供项目调用 Python 脚本时使用
+
   inferScriptPath: /Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/scripts/infer.py
-  infer-script: scripts/infer.py  # Python 推理脚本路径，相对项目目录
-  labels-file: scripts/labels.txt # 标签文件路径，相对项目目录
+  # Python 推理脚本绝对路径
+
+  infer-script: scripts/infer.py
+  # Python 推理脚本相对项目目录路径
+
+  labels-file: scripts/labels.txt
+  # 标签文件路径，相对项目目录，存储缺陷豆类别信息
