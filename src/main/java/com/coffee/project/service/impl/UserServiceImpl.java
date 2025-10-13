@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.coffee.project.common.Result;
 import com.coffee.project.domain.User;
 import com.coffee.project.dto.LoginDTO;
-import com.coffee.project.dto.LoginResult;
+import com.coffee.project.dto.LoginResultDTO;
 import com.coffee.project.dto.PasswordResetDTO;
 import com.coffee.project.dto.RegisterDTO;
 import com.coffee.project.mapper.UserMapper;
@@ -13,7 +13,6 @@ import com.coffee.project.utils.FileUploadUtils;
 import com.coffee.project.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -147,11 +146,11 @@ public class UserServiceImpl implements UserService {
         log.info("登录成功，用户名: {}, JWT 生成完成", loginDTO.getUsername());
 
         // 封装登录结果
-        LoginResult loginResult = new LoginResult();
-        loginResult.setToken(jwt);
-        loginResult.setUser(user);
+        LoginResultDTO loginResultDTO = new LoginResultDTO();
+        loginResultDTO.setToken(jwt);
+        loginResultDTO.setUser(user);
 
-        return Result.success(loginResult);
+        return Result.success(loginResultDTO);
     }
 
     /**

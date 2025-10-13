@@ -4,7 +4,7 @@ import com.coffee.project.domain.User;
 import lombok.Data;
 
 @Data
-public class LoginResult {
+public class LoginResultDTO {
     private String token;
     private User user;
 }
