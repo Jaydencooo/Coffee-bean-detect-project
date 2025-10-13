@@ -47,9 +47,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;  // 自动注入 UserMapper，用于操作数据库
 
-    @Value("${file.upload-dir}")
-    private String uploadDir; // 文件上传目录，从配置文件读取
-
     /**
      * 用户注册
      *

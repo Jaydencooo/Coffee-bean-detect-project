@@ -5,6 +5,11 @@ spring:
     username: root    # 数据库用户名
     password: bape050622  # 数据库密码
 
+  redis:
+    host: localhost
+    port: 6379
+    password: bape050622
+
 file:
   # 默认：相对路径 uploads（随 JAR 运行目录），可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
   upload-dir: ${FILE_UPLOAD_DIR:uploads}

@@ -31,6 +31,12 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest req, HttpServletResponse resp, Object handler) throws Exception {
 
+        // 新增：如果是 OPTIONS 预检请求，直接放行（仅添加这一段，其他逻辑不变）
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            log.info("预检请求(OPTIONS)，直接放行");
+            return true;
+        }
+
         // 1. 获取本次请求的 URL 路径
         String url = req.getRequestURI();
         log.info("请求的url {}", url);

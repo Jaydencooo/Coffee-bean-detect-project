@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DetectionRecordServiceImpl
@@ -141,18 +142,41 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
      */
     @Override
     public DetectionRecord detectAndSave(String imagePath, Long userId) throws IOException, InterruptedException {
+        // 调用 Python 脚本获取 defectsJson
         String defectsJson = runYoloDetection(imagePath);
 
+        // 解析 JSON 为 DTO
+        DetectionResultDTO dto = parseOutputToDTO(defectsJson);
+
+        // 提取缺陷名字，逗号分隔
+        String defectsName = extractDefectsName(dto);
+
+        // 构建 DetectionRecord 实体
         DetectionRecord record = new DetectionRecord();
         record.setUserId(userId);
         record.setImagePath(imagePath);
         record.setDefectsJson(defectsJson);
+        record.setDefectsName(defectsName); // 新增字段
         record.setCreatedAt(LocalDateTime.now());
 
+        // 保存到数据库
         detectionRecordMapper.insert(record);
 
         return record;
     }
+
+    /**
+     * 从 DTO 中提取缺陷名字，逗号分隔
+     */
+    private String extractDefectsName(DetectionResultDTO dto) {
+        List<DetectionResultDTO.Defect> defects = dto.getDefects();
+        if (defects == null || defects.isEmpty()) return "";
+        return defects.stream()
+                .map(DetectionResultDTO.Defect::getType)
+                .collect(Collectors.joining(", "));
+
+    }
+
 
     /**
      * 调用 detectAndSave 并直接返回 DTO 给前端

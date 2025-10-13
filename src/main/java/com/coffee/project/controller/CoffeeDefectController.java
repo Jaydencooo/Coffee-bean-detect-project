@@ -4,17 +4,10 @@ import com.coffee.project.common.Result;
 import com.coffee.project.dto.DetectionResultDTO;
 import com.coffee.project.service.DetectionRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.UUID;
 
 /**
  * CoffeeDefectController
@@ -35,7 +28,6 @@ public class CoffeeDefectController {
 
     /**
      * 缺陷检测接口
-     *
      * 1. 接收前端上传的图片
      * 2. 从请求头获取用户 ID
      * 3. 将上传的 MultipartFile 保存为临时文件

@@ -20,7 +20,7 @@ public class DetectionRecord {
      * 主键 ID，数据库自动生成（自增）
      * 该字段是每条记录的唯一标识
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(type = IdType.AUTO) // 自增
     private Long id;
 
     /**
@@ -44,10 +44,14 @@ public class DetectionRecord {
     @TableField("defects_json")
     private String defectsJson;
 
+
     /**
      * 记录创建时间，保存检测记录的时间戳
      * 使用 Java 8 的 LocalDateTime 类型，方便时间操作
      */
     @TableField("created_at")
     private LocalDateTime createdAt;
+
+    private String defectsName; // 检测到的缺陷名字
+
 }

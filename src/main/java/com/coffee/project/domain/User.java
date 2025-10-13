@@ -1,5 +1,7 @@
 package com.coffee.project.domain;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -15,6 +17,7 @@ public class User {
     /**
      * 用户的唯一标识符，通常是一个自增的长整型数字。
      */
+    @TableId(type = IdType.AUTO) // 自增
     private Long id;
 
     /**
