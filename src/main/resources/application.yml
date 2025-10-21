@@ -35,7 +35,7 @@ server:
 
 coze:
   bot-id: 7547989723290026030   # Bot ID，替换为你的 Bot ID
-  pat: pat_Jvk4LOewOuIhUtm2V7qSxXp3uS8VzH48UPcQbgZt0ZC6fVdzu4xM3u0QLGsQsvB7
+  pat: pat_yfgGk4DWN3hIuc6nKyF3NAMBiN84gpnm6fnTHEEe9A9EBUWzXBSF1OQl8o7Ldjrc
   # Bot PAT（访问令牌），用于身份验证和调用接口
 
 detection:

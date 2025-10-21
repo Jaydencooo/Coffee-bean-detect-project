@@ -1,13 +1,18 @@
 package com.coffee.project.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.coffee.project.domain.CoffeeBeanGradeInfo;
 import com.coffee.project.domain.DetectionRecord;
 import com.coffee.project.dto.DetectionResultDTO;
+import com.coffee.project.mapper.CoffeeBeanGradeInfoMapper;
 import com.coffee.project.mapper.DetectionRecordMapper;
 import com.coffee.project.service.DetectionHistoryService;
 import com.coffee.project.service.DetectionRecordService;
+import com.coffee.project.vo.CoffeeBeanGradeInfoVO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,43 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * DetectionRecordServiceImpl
- *
- * <p>功能：
- * <ul>
- *     <li>调用 Python 脚本进行咖啡豆缺陷检测</li>
- *     <li>解析 Python 脚本输出的 JSON 结果</li>
- *     <li>保存检测记录到数据库</li>
- *     <li>将检测结果封装为 DTO 返回给前端</li>
- * </ul>
- *
- * <p>执行流程：
- * <ol>
- *     <li>初始化加载缺陷标签文件（labels.txt），在 Spring 容器初始化完成后执行 {@link #init()}</li>
- *     <li>调用 Python 推理脚本（Yolo 模型）执行缺陷检测，获取原始 JSON 输出</li>
- *     <li>将检测结果保存为 {@link DetectionRecord} 并插入数据库</li>
- *     <li>将缺陷 JSON 解析为 {@link DetectionResultDTO} 并返回前端</li>
- * </ol>
- *
- * <p>异常处理：
- * <ul>
- *     <li>Python 脚本执行失败或退出码非 0 抛出 RuntimeException</li>
- *     <li>JSON 解析异常抛出 IOException</li>
- *     <li>进程执行中断抛出 InterruptedException</li>
- * </ul>
- *
- * <p>注意事项：
- * <ul>
- *     <li>确保 Python 环境和依赖库已正确安装</li>
- *     <li>labels 文件路径和脚本路径需根据部署环境配置</li>
- *     <li>缺陷阈值可根据需求调整（当前为 confidence > 0.5）</li>
- * </ul>
- *
- * @author
- * @version 1.0
- * @since 2025-09-18
- */
 @Service
 @Slf4j
 public class DetectionRecordServiceImpl implements DetectionRecordService {
@@ -67,61 +35,49 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
     @Autowired
     private DetectionRecordMapper detectionRecordMapper;
 
+
+    @Autowired
+    private CoffeeBeanGradeInfoMapper coffeeBeanGradeInfoMapper;
+
     @Autowired
     private DetectionHistoryService detectionHistoryService;
 
-    /** 标签列表，用于解析 output 数组 */
-    private List<String> labels;
+    private List<String> labels = new ArrayList<>();  //存储 YOLO 模型识别的类别标签。
 
-    /** 标签文件路径，从配置文件读取 */
     @Value("${detection.labels-file}")
-    private String labelsPath;
+    private String labelsPath;  //标签文本文件
 
     @Value("${detection.pythonInterpreterPath}")
-    private String pythonInterpreterPath;
+    private String pythonInterpreterPath;  //Python 解释器路径
 
     @Value("${detection.inferScriptPath}")
-    private String inferScriptPath;
-    /**
-     * 初始化方法，加载标签文件
-     *
-     * <p>在 Spring 容器初始化完成后执行，读取 labels 文件到 {@link #labels} 列表。
-     * 如果读取失败，使用空列表以避免空指针异常。
-     */
-    @PostConstruct
-    public void init() {
-        String projectDir = System.getProperty("user.dir");
-        String fullLabelsPath = Paths.get(projectDir, labelsPath).toString();
+    private String inferScriptPath;  //YOLO 推理脚本路径
 
+    /** 初始化加载 labels 文件
+     * 功能：从文件读取 YOLO 分类标签到 labels 列表
+     * 作用：保证在调用检测方法前，labels 已经加载完成
+     * */
+    @PostConstruct //用来标记一个方法 在依赖注入完成后、Spring 容器初始化 Bean 之后立即执行。它的主要作用是做 初始化工作。
+    public void init() {
         try {
             labels = Files.readAllLines(Paths.get(labelsPath));
+            log.info("缺陷标签加载完成: {}", labels);
         } catch (IOException e) {
-            e.printStackTrace();
-            labels = new ArrayList<>();
+            log.error("加载 labels 文件失败: {}", labelsPath, e);
         }
     }
 
-    /**
-     * 调用 Python 脚本进行咖啡豆缺陷检测
-     *
-     * @param imagePath 待检测图片路径
-     * @return Python 脚本输出的 JSON 字符串
-     * @throws IOException 读取脚本输出异常
-     * @throws InterruptedException 脚本执行中断异常
-     */
+    /** 调用 Python YOLO 脚本并返回原始 JSON */
     private String runYoloDetection(String imagePath) throws IOException, InterruptedException {
-
-
         ProcessBuilder pb = new ProcessBuilder(pythonInterpreterPath, inferScriptPath, imagePath);
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
-
         StringBuilder output = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                output.append(line);
+                output.append(line).append("\n"); // 加换行符便于调试
             }
         }
 
@@ -130,90 +86,63 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
             throw new RuntimeException("推理脚本执行失败，退出码：" + exitCode + "\n输出：" + output);
         }
 
-        String rawOutput = output.toString();
-        System.out.println("Python原始输出: " + rawOutput);
-
-        int jsonIndex = rawOutput.indexOf("{");
+        String raw = output.toString();
+        int jsonIndex = raw.indexOf("{");
         if (jsonIndex == -1) {
-            throw new RuntimeException("咖啡豆缺陷检测失败: 未找到 JSON 内容\n原始输出: " + rawOutput);
+            throw new RuntimeException("未找到 JSON 内容，原始输出: " + raw);
         }
 
-        return rawOutput.substring(jsonIndex);
+        return raw.substring(jsonIndex);
     }
 
     /**
-     * 调用 Python 检测并保存检测记录到数据库
-     *
-     * @param imagePath 待检测图片路径
-     * @param userId 用户 ID
-     * @return {@link DetectionRecord} 保存的检测记录对象
-     * @throws IOException 脚本输出读取异常
-     * @throws InterruptedException 脚本执行中断异常
+     * 检测图片、保存记录并返回 DTO
      */
     @Override
-    public DetectionRecord detectAndSave(String imagePath, Long userId) throws IOException, InterruptedException {
-        // 调用 Python 脚本获取 defectsJson
+    public CoffeeBeanGradeInfoVO detectAndSaveAndReturnDTO(String imagePath, Long userId) throws IOException, InterruptedException {
+        // 1. 调用 Python 检测
         String defectsJson = runYoloDetection(imagePath);
 
-        // 解析 JSON 为 DTO
-        DetectionResultDTO dto = parseOutputToDTO(defectsJson);
+        // 2. 解析 JSON 并生成缺陷列表
+        DetectionResultDTO dto = parseJsonToDTO(defectsJson);
 
-        // 提取缺陷名字，逗号分隔
-        String defectsName = extractDefectsName(dto);
+        // 3. 提取缺陷名字
+        String defectsName = dto.getDefects().stream()
+                .map(DetectionResultDTO.Defect::getType)
+                .collect(Collectors.joining(", "));
 
-        // 构建 DetectionRecord 实体
+
+        // 4. 保存到数据库
         DetectionRecord record = new DetectionRecord();
         record.setUserId(userId);
         record.setImagePath(imagePath);
         record.setDefectsJson(defectsJson);
-        record.setDefectsName(defectsName); // 新增字段
+        record.setDefectsName(defectsName);
         record.setCreatedAt(LocalDateTime.now());
-
-        // 保存到数据库
         detectionRecordMapper.insert(record);
+
+        // 5. 保存历史
         try {
-            detectionHistoryService.addHistory(record.getUserId(), record.getDefectsName(), record.getImagePath());
+            detectionHistoryService.addHistory(userId, defectsName, imagePath);
         } catch (Exception e) {
             log.error("保存检测历史失败", e);
         }
-        return record;
+
+        //根据咖啡豆检测历史的咖啡豆名来返回咖啡豆相关的信息
+        LambdaQueryWrapper<CoffeeBeanGradeInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CoffeeBeanGradeInfo::getEnglishName, record.getDefectsName());
+        CoffeeBeanGradeInfo coffeeBeanGradeInfo = coffeeBeanGradeInfoMapper.selectOne(wrapper);
+        CoffeeBeanGradeInfoVO coffeeBeanGradeInfoVO = new CoffeeBeanGradeInfoVO();
+
+        if (coffeeBeanGradeInfo != null) {
+            BeanUtils.copyProperties(coffeeBeanGradeInfo, coffeeBeanGradeInfoVO);
+        }
+
+        return coffeeBeanGradeInfoVO;
     }
 
-    /**
-     * 从 DTO 中提取缺陷名字，逗号分隔
-     */
-    private String extractDefectsName(DetectionResultDTO dto) {
-        List<DetectionResultDTO.Defect> defects = dto.getDefects();
-        if (defects == null || defects.isEmpty()) return "";
-        return defects.stream()
-                .map(DetectionResultDTO.Defect::getType)
-                .collect(Collectors.joining(", "));
-
-    }
-
-
-    /**
-     * 调用 detectAndSave 并直接返回 DTO 给前端
-     *
-     * @param imagePath 待检测图片路径
-     * @param userId 用户 ID
-     * @return {@link DetectionResultDTO} 封装前端需要的缺陷检测结果
-     * @throws IOException 脚本输出解析异常
-     * @throws InterruptedException 脚本执行中断异常
-     */
-    public DetectionResultDTO detectAndSaveAndReturnDTO(String imagePath, Long userId) throws IOException, InterruptedException {
-        DetectionRecord record = detectAndSave(imagePath, userId);
-        return parseOutputToDTO(record.getDefectsJson());
-    }
-
-    /**
-     * 将 defectsJson 解析为 {@link DetectionResultDTO}
-     *
-     * @param defectsJson Python 脚本输出的 JSON 字符串
-     * @return {@link DetectionResultDTO} 封装缺陷检测结果
-     * @throws IOException JSON 解析异常
-     */
-    private DetectionResultDTO parseOutputToDTO(String defectsJson) throws IOException {
+    /** 将 Python JSON 输出解析为 DTO */
+    private DetectionResultDTO parseJsonToDTO(String defectsJson) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(defectsJson);
 
@@ -221,34 +150,33 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
         dto.setStatus("success");
 
         List<DetectionResultDTO.Defect> defectList = new ArrayList<>();
-        JsonNode defectsArray = root.get("defects");
 
+        // 优先读取 defects 数组
+        JsonNode defectsArray = root.get("defects");
         if (defectsArray != null && defectsArray.isArray() && defectsArray.size() > 0) {
-            for (JsonNode defectNode : defectsArray) {
+            for (JsonNode node : defectsArray) {
                 DetectionResultDTO.Defect defect = new DetectionResultDTO.Defect();
-                defect.setType(defectNode.get("type").asText());
-                defect.setConfidence(defectNode.get("confidence").asDouble());
+                defect.setType(node.get("type").asText());
+                defect.setConfidence(node.get("confidence").asDouble());
                 defectList.add(defect);
             }
         } else {
+            // fallback 到 output 数组
             JsonNode outputArray = root.get("output");
             if (outputArray != null && outputArray.isArray()) {
                 for (int i = 0; i < outputArray.size(); i++) {
                     double confidence = outputArray.get(i).asDouble();
-                    if (confidence > 0.5) {
+                    if (confidence > 0.5) { // confidence 阈值可配置
                         DetectionResultDTO.Defect defect = new DetectionResultDTO.Defect();
-                        defect.setType(labels != null && labels.size() > i ? labels.get(i) : "unknown");
+                        defect.setType(i < labels.size() ? labels.get(i) : "unknown");
                         defect.setConfidence(confidence);
                         defectList.add(defect);
                     }
                 }
-            } else {
-                System.out.println("defects 数组和 output 数组都为空！");
             }
         }
 
         dto.setDefects(defectList);
         return dto;
     }
-
 }

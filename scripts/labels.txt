@@ -1,13 +1,13 @@
-A
-AA
-AAA
-B
-Black bean
-Broken bean
-Elephant ear bean
-Faded bean
-Insect-damaged bean
-longberry
+Grade A
+Grade AA
+Grade AAA
+Grade B
+Black Bean
+Broken Bean
+Elephant Ear Bean
+Faded Bean
+Insect-damaged Bean
+Long berry
 Pea berry
-Small broken bean
-Triangle bean
+Small Broken Bean
+Triangle Bean

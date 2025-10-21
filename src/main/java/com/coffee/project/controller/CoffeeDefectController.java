@@ -3,6 +3,7 @@ package com.coffee.project.controller;
 import com.coffee.project.common.Result;
 import com.coffee.project.dto.DetectionResultDTO;
 import com.coffee.project.service.DetectionRecordService;
+import com.coffee.project.vo.CoffeeBeanGradeInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +40,7 @@ public class CoffeeDefectController {
      * @return Result<DetectionResultDTO> 返回检测结果或错误信息
      */
     @PostMapping("/detect")
-    public Result<DetectionResultDTO> detectDefects(@RequestParam("file") MultipartFile file,
+    public Result<CoffeeBeanGradeInfoVO> detectDefects(@RequestParam("file") MultipartFile file,
                                                     @RequestHeader("userId") Long userId) {
         // 1. 判断文件是否为空
         if (file == null || file.isEmpty()) {
@@ -59,12 +60,12 @@ public class CoffeeDefectController {
             file.transferTo(tempFile);
 
             // 5. 调用服务方法进行检测，并直接返回 DTO
-            DetectionResultDTO dto = detectionRecordService.detectAndSaveAndReturnDTO(
+            CoffeeBeanGradeInfoVO vo = detectionRecordService.detectAndSaveAndReturnDTO(
                     tempFile.getAbsolutePath(), userId
             );
 
             // 6. 返回成功结果
-            return Result.success(dto);
+            return Result.success(vo);
 
         } catch (Exception e) {
             // 7. 捕获异常，打印栈信息，并返回错误
