@@ -29,25 +29,6 @@ public class JwtUtils {
     private static final long EXPIRATION = 3600_000;
 
     /**
-     * 从 JWT token 中获取用户 ID
-     * 说明：
-     *  1. 兼容老方法，生成 token 时 ID 放在 subject
-     *  2. 如果 subject 为空，则尝试从 claims 里获取 "id" 字段
-     *
-     * @param token JWT 字符串
-     * @return 用户 ID，如果解析失败返回 null
-     */
-    public static Long getUserId(String token) {
-        Claims claims = parseJWT(token);   // 解析 token
-        String subject = claims.getSubject();  // 获取 subject
-        if (subject != null && !subject.isEmpty()) {
-            return Long.valueOf(subject);
-        }
-        // 如果 subject 没有，尝试从 claims 里获取 id
-        return claims.get("id", Long.class);
-    }
-
-    /**
      * 生成 JWT 令牌
      * 说明：
      *  1. 可以把需要的数据放在 claims 中（如 userId、username 等）
@@ -87,4 +68,24 @@ public class JwtUtils {
                 .parseClaimsJws(jwt) // 解析 token
                 .getBody();          // 返回 payload（Claims）
     }
+
+    /**
+     * 从 JWT token 中获取用户 ID
+     * 说明：
+     *  1. 兼容老方法，生成 token 时 ID 放在 subject
+     *  2. 如果 subject 为空，则尝试从 claims 里获取 "id" 字段
+     *
+     * @param token JWT 字符串
+     * @return 用户 ID，如果解析失败返回 null
+     */
+    public static Long getUserId(String token) {
+        Claims claims = parseJWT(token);   // 解析 token
+        String subject = claims.getSubject();  // 获取 subject
+        if (subject != null && !subject.isEmpty()) {
+            return Long.valueOf(subject);
+        }
+        // 如果 subject 没有，尝试从 claims 里获取 id
+        return claims.get("id", Long.class);
+    }
+
 }

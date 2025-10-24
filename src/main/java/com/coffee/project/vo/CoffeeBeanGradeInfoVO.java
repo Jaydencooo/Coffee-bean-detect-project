@@ -37,4 +37,7 @@ public class CoffeeBeanGradeInfoVO {
     /** 预防措施 */
     private String prevention;
 
+    /** 样例图片 */
+    private String sampleImageUrl;
+
 }

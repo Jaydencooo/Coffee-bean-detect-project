@@ -50,4 +50,7 @@ public class CoffeeBeanGradeInfo {
 
     /** 更新时间 */
     private LocalDateTime updateTime;
+
+    /** 样例照片*/
+    private String sampleImageUrl;
 }

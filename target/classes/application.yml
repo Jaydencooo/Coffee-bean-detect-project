@@ -14,6 +14,7 @@ file:
   # 文件上传配置
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
   # 默认上传目录为相对路径 "uploads"，可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
+  sampleImages-dir: ${file.sampleImages-dir:sampleImages}
 
 mybatis-plus:
   configuration:
