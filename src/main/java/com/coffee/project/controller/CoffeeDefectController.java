@@ -54,22 +54,25 @@ public class CoffeeDefectController {
 
         try {
 
-            //获取项目根目录
+            // 获取项目根目录
             String projectDir = System.getProperty("user.dir");
-            File detectDir = new File(projectDir + detectDirPath);
 
-            //如果detectImages目录不存在就创建
+            // 结合 detectDirPath，自动处理斜杠
+            File detectDir = new File(projectDir, detectDirPath);
+
+            // 如果 detectImages 目录不存在就创建
             if (!detectDir.exists()) {
                 detectDir.mkdirs();
             }
 
-            //防止文件名重复
+            // 防止文件名重复
             String originalFileName = file.getOriginalFilename();
             String fileName = "user_" + System.currentTimeMillis() + "_" + originalFileName;
             File destFile = new File(detectDir, fileName);
 
-            //保存文件
+            // 保存文件
             file.transferTo(destFile);
+
 
             //调用咖啡豆检测服务
             CoffeeBeanGradeInfoVO vo = detectionRecordService.detectAndSaveAndReturnDTO(destFile.getAbsolutePath(), userId);
