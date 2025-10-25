@@ -4,6 +4,7 @@ import com.coffee.project.common.Result;
 import com.coffee.project.service.DetectionRecordService;
 import com.coffee.project.vo.CoffeeBeanGradeInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +26,8 @@ public class CoffeeDefectController {
     @Autowired
     private DetectionRecordService detectionRecordService;
 
-
+    @Value("${file.detect-dir}")
+    private String detectDirPath;
     /**
      * 缺陷检测接口
      * 1. 接收前端上传的图片
@@ -50,20 +52,28 @@ public class CoffeeDefectController {
             return Result.error("缺少用户ID");
         }
 
-        File tempFile = null;
         try {
-            // 3. 创建临时文件用于存储上传的图片
-            tempFile = File.createTempFile("upload-", ".jpg");
 
-            // 4. 将 MultipartFile 写入临时文件
-            file.transferTo(tempFile);
+            //获取项目根目录
+            String projectDir = System.getProperty("user.dir");
+            File detectDir = new File(projectDir + detectDirPath);
 
-            // 5. 调用服务方法进行检测，并直接返回 DTO
-            CoffeeBeanGradeInfoVO vo = detectionRecordService.detectAndSaveAndReturnDTO(
-                    tempFile.getAbsolutePath(), userId
-            );
+            //如果detectImages目录不存在就创建
+            if (!detectDir.exists()) {
+                detectDir.mkdirs();
+            }
 
-            // 6. 返回成功结果
+            //防止文件名重复
+            String originalFileName = file.getOriginalFilename();
+            String fileName = "user_" + System.currentTimeMillis() + "_" + originalFileName;
+            File destFile = new File(detectDir, fileName);
+
+            //保存文件
+            file.transferTo(destFile);
+
+            //调用咖啡豆检测服务
+            CoffeeBeanGradeInfoVO vo = detectionRecordService.detectAndSaveAndReturnDTO(destFile.getAbsolutePath(), userId);
+
             return Result.success(vo);
 
         } catch (Exception e) {
@@ -71,11 +81,6 @@ public class CoffeeDefectController {
             e.printStackTrace();
             return Result.error("检测失败：" + e.getMessage());
 
-        } finally {
-            // 8. 删除临时文件，避免占用磁盘空间
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
-            }
         }
     }
 }

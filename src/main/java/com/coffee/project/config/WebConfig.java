@@ -41,7 +41,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/**/*.gif",
                         "/uploads/**",
                         "/coze/**",
-                        "/test.html",
+                        "/coze.html",
                         "/sample/**"
                 );
     }

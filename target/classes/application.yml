@@ -14,7 +14,7 @@ file:
   # 文件上传配置
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
   # 默认上传目录为相对路径 "uploads"，可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
-  sampleImages-dir: ${file.sampleImages-dir:sampleImages}
+  detect-dir: ${DETECT_UPLOAD_DIR:detectImages}
 
 mybatis-plus:
   configuration:
@@ -22,6 +22,9 @@ mybatis-plus:
     # 是否开启数据库字段下划线到实体属性驼峰命名的自动映射，true表示开启
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # MyBatis 日志实现类，将 SQL 输出到控制台，方便调试
+    global-config:
+        db-config:
+          id-type=auto:
 
   global-config:
     db-config:
@@ -35,8 +38,8 @@ server:
     context-path: /api  # 应用上下文路径，所有请求都会以 /api 开头
 
 coze:
-  bot-id: 7547989723290026030   # Bot ID，替换为你的 Bot ID
-  pat: pat_yfgGk4DWN3hIuc6nKyF3NAMBiN84gpnm6fnTHEEe9A9EBUWzXBSF1OQl8o7Ldjrc
+  bot-id: 7565069280355106867   # Bot ID，替换为你的 Bot ID
+  pat: sat_2q0OG90CM7wmcHPuwmt02ch8H9r38rrrnpxhHS6tzHaZ6SBCRTDJCGL6oA9FeCXL
   # Bot PAT（访问令牌），用于身份验证和调用接口
 
 detection:
