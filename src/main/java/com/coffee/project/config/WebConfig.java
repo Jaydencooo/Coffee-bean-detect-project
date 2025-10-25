@@ -22,6 +22,7 @@ public class WebConfig implements WebMvcConfigurer {
      * 添加拦截器配置
      * 重写 WebMvcConfigurer 接口的 addInterceptors 方法
      * @param registry 拦截器注册器，用于注册和管理拦截器
+     *
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
