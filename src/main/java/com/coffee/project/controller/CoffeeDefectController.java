@@ -1,7 +1,6 @@
 package com.coffee.project.controller;
 
 import com.coffee.project.common.Result;
-import com.coffee.project.dto.DetectionResultDTO;
 import com.coffee.project.service.DetectionRecordService;
 import com.coffee.project.vo.CoffeeBeanGradeInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;

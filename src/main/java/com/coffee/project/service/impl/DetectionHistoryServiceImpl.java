@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,27 +32,35 @@ public class DetectionHistoryServiceImpl implements DetectionHistoryService {
     /**
      * 根据用户ID获取检测历史记录。
      * <p>
-     * 该方法通过用户ID查询数据库，获取该用户的所有检测历史记录，并将其转换为 DetectionHistoryVO 对象列表返回。
+     * 该方法通过用户ID查询数据库，获取该用户的所有检测历史记录，
+     * 并将其转换为 DetectionHistoryVO 对象列表返回。
+     * 如果没有任何记录，将返回一个空列表（[]），而不是 null。
      * </p>
      *
      * @param userId 用户的唯一标识符，用于查询其检测历史记录。
-     * @return 包含检测历史记录的 DetectionHistoryVO 对象列表。
+     * @return 包含检测历史记录的 DetectionHistoryVO 对象列表（可能为空）。
      */
     @Override
     public List<DetectionHistoryVO> getHistoryByUserId(Long userId) {
-        // 使用 LambdaQueryWrapper 构造查询条件，查询用户ID等于指定值的检测历史记录
+        // 查询用户的检测历史记录
         List<DetectionHistory> list = detectionHistoryMapper.selectList(
                 new LambdaQueryWrapper<DetectionHistory>()
                         .eq(DetectionHistory::getUserId, userId)
         );
 
-        // 将查询结果转换为 DetectionHistoryVO 对象列表
+        // 如果为空，直接返回一个空列表，避免返回 null
+        if (list == null || list.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 将查询结果转换为 VO 列表
         return list.stream().map(detectionHistory -> {
             DetectionHistoryVO detectionHistoryVO = new DetectionHistoryVO();
-            BeanUtils.copyProperties(detectionHistory, detectionHistoryVO); // 复制属性
+            BeanUtils.copyProperties(detectionHistory, detectionHistoryVO);
             return detectionHistoryVO;
         }).collect(Collectors.toList());
     }
+
 
     /**
      * 添加新的检测记录。
