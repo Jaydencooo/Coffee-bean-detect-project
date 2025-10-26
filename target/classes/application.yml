@@ -4,6 +4,9 @@ spring:
     url: jdbc:mysql://localhost:3306/coffeebean_detect  # 数据库连接URL，指定数据库名 coffeebean_detect
     username: root    # 数据库用户名
     password: bape050622  # 数据库密码
+  web:
+    resources:
+      static-locations: classpath:/static/,file:./detectImages/
 
   redis:
     host: localhost     # Redis 主机地址
@@ -14,7 +17,7 @@ file:
   # 文件上传配置
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
   # 默认上传目录为相对路径 "uploads"，可通过环境变量 FILE_UPLOAD_DIR 覆盖为绝对路径
-  detect-dir: ${DETECT_UPLOAD_DIR:detectImages}
+  detect-dir: detectImages   # 保存目录（相对项目根目录）
 
 mybatis-plus:
   configuration:

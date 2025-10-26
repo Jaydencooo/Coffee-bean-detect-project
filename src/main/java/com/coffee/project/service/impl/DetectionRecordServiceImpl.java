@@ -96,7 +96,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
     }
 
     /**
-     * 检测图片、保存记录并返回 DTO
+     * 检测图片、保存记录并返回 VO
      */
     @Override
     public CoffeeBeanGradeInfoVO detectAndSaveAndReturnDTO(String imagePath, Long userId) throws IOException, InterruptedException {
@@ -133,10 +133,11 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
         wrapper.eq(CoffeeBeanGradeInfo::getEnglishName, record.getDefectsName());
         CoffeeBeanGradeInfo coffeeBeanGradeInfo = coffeeBeanGradeInfoMapper.selectOne(wrapper);
         CoffeeBeanGradeInfoVO coffeeBeanGradeInfoVO = new CoffeeBeanGradeInfoVO();
-
         if (coffeeBeanGradeInfo != null) {
             BeanUtils.copyProperties(coffeeBeanGradeInfo, coffeeBeanGradeInfoVO);
         }
+        //返回检测id
+        coffeeBeanGradeInfoVO.setDetectionId(record.getId());
 
         return coffeeBeanGradeInfoVO;
     }

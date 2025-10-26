@@ -70,7 +70,7 @@ public class FavoriteRecordServiceImpl implements FavoriteRecordService {
         // 4️⃣ 返回结果，将实体对象转换为 VO 对象
         FavoriteRecordVO favoriteRecordVO = new FavoriteRecordVO();
         BeanUtils.copyProperties(favoriteRecord, favoriteRecordVO);
-
+        favoriteRecordVO.setFavoriteRecordId(favoriteRecord.getId());
         return favoriteRecordVO;
     }
 

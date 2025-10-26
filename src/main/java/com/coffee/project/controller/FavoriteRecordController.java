@@ -16,6 +16,12 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/favorite") // 请求路径前缀 /favorite
+@CrossOrigin(
+        origins =  {"http://localhost:8091", "http://localhost:8092"},// 允许前端项目地址发起跨域请求
+        allowCredentials = "true",          // 允许携带 Cookie 等凭证信息
+        allowedHeaders = "*",                // 允许所有请求头
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS}
+)
 @Slf4j
 public class FavoriteRecordController {
 

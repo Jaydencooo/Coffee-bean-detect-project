@@ -1,5 +1,6 @@
 package com.coffee.project.vo;
 
+import com.coffee.project.domain.FavoriteRecord;
 import lombok.Data;
 import java.time.LocalDateTime;
 
@@ -36,4 +37,6 @@ public class FavoriteRecordVO {
      * 通常由数据库自动生成。
      */
     private LocalDateTime createdAt;
+
+    private Long favoriteRecordId;
 }

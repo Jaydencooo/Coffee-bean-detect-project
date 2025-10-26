@@ -40,4 +40,6 @@ public class CoffeeBeanGradeInfoVO {
     /** 样例图片 */
     private String sampleImageUrl;
 
+    /** 检测数据Id */
+    private Long detectionId;
 }
