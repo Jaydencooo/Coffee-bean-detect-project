@@ -33,5 +33,5 @@ public interface DetectionHistoryService {
      * @param defectsName 检测到的缺陷名称。
      * @param imagePath 检测图像的路径。
      */
-    void addHistory(Long userId, String defectsName, String imagePath);
+    void addHistory(Long userId, String defectsName, String imagePath,Long detectionId);
 }

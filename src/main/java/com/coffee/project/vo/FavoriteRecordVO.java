@@ -38,5 +38,8 @@ public class FavoriteRecordVO {
      */
     private LocalDateTime createdAt;
 
+    /**
+     * 收藏记录的id
+     */
     private Long favoriteRecordId;
 }

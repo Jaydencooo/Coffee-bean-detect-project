@@ -41,4 +41,9 @@ public class DetectionHistoryVO {
      * </p>
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 检测记录id
+     */
+    private Long detectionId;
 }

@@ -52,6 +52,9 @@ public class DetectionRecord {
     @TableField("created_at")
     private LocalDateTime createdAt;
 
-    private String defectsName; // 检测到的缺陷名字
+    /**
+     * 检测到的缺陷咖啡豆名字 用来返回相关数据
+     */
+    private String defectsName;
 
 }

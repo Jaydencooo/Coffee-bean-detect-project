@@ -73,12 +73,13 @@ public class DetectionHistoryServiceImpl implements DetectionHistoryService {
      * @param imagePath 检测图像的路径。
      */
     @Override
-    public void addHistory(Long userId, String defectsName, String imagePath) {
+    public void addHistory(Long userId, String defectsName, String imagePath,Long detectionId) {
         DetectionHistory detectionHistory = new DetectionHistory(); // 创建新的检测历史对象
         detectionHistory.setUserId(userId); // 设置用户ID
         detectionHistory.setDefectsName(defectsName); // 设置缺陷名称
         detectionHistory.setImagePath(imagePath); // 设置图像路径
         detectionHistory.setCreatedAt(LocalDateTime.now()); // 设置创建时间为当前时间
+        detectionHistory.setDetectionId(detectionId);
         detectionHistoryMapper.insert(detectionHistory); // 插入到数据库
     }
 }

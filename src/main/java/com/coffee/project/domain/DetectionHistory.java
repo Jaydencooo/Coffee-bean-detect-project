@@ -49,4 +49,9 @@ public class DetectionHistory {
      * 记录检测操作发生的时间，精确到秒
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 检测记录id 返回给前端
+     */
+    private Long detectionId;
 }

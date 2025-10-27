@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -123,7 +124,7 @@ public class DetectionRecordServiceImpl implements DetectionRecordService {
 
         // 5. 保存历史
         try {
-            detectionHistoryService.addHistory(userId, defectsName, imagePath);
+            detectionHistoryService.addHistory(userId, defectsName, imagePath,record.getId());
         } catch (Exception e) {
             log.error("保存检测历史失败", e);
         }
