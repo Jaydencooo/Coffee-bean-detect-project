@@ -1,12 +1,7 @@
 package com.coffee.project.task;
-
-
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.coffee.project.domain.DetectionHistory;
 import com.coffee.project.domain.DetectionRecord;
-import com.coffee.project.mapper.DetectionHistoryMapper;
 import com.coffee.project.mapper.DetectionRecordMapper;
-import com.coffee.project.service.DetectionHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,9 +12,6 @@ import java.time.LocalDateTime;
 @Component
 @Slf4j
 public class DetectionHistoryCleanTask {
-
-    @Autowired
-    private DetectionHistoryMapper detectionHistoryMapper;
 
     @Autowired
     private DetectionRecordMapper detectionRecordMapper;
