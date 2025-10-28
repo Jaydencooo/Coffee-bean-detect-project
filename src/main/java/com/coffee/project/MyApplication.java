@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @MapperScan("com.coffee.project.mapper")
-@EnableScheduling  // ✅ 开启定时任务
+@EnableScheduling  // 开启定时任务
 public class MyApplication {
 
     /**

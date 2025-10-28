@@ -39,8 +39,7 @@ public class DetectionHistoryCleanTask {
                 new LambdaQueryWrapper<DetectionRecord>()
                         .lt(DetectionRecord::getCreatedAt, threshold)
         );
-
-        log.info("检测数据清理完成，共删除 {} 条记录", recordDeleted);
+        log.info("检测历史数据清理完成，共删除 {} 条记录", recordDeleted);
 
     }
 }
