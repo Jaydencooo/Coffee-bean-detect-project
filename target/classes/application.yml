@@ -7,6 +7,8 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,file:./detectImages/
+  mvc:
+    static-path-pattern: /detectImages/**
 
   redis:
     host: localhost     # Redis 主机地址
@@ -51,10 +53,10 @@ detection:
   # Windows 上可能是 python 或虚拟环境路径 venv\Scripts\python.exe
   # Mac 上可以是系统 Python 或虚拟环境路径 /path/to/venv/bin/python3
 
-  pythonInterpreterPath: /Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/venv/bin/python3
+  pythonInterpreterPath: /Users/coconut/Downloads/咖啡豆项目/coffee-bean-detect/venv/bin/python3
   # Python 解释器绝对路径，供项目调用 Python 脚本时使用
 
-  inferScriptPath: /Users/coconut/Desktop/咖啡豆项目/coffee-bean-detect/scripts/infer.py
+  inferScriptPath: /Users/coconut/Downloads/咖啡豆项目/coffee-bean-detect/scripts/infer.py
   # Python 推理脚本绝对路径
 
   infer-script: scripts/infer.py
